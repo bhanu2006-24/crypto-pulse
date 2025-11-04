@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoPulse Pro Financial Web Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <!-- Lucide icons for professional look -->
+<script src="https://unpkg.com/lucide@0.268.0/dist/umd/lucide.min.js"></script>
+    <style>
+        /* Custom styles for a super professional dark look */
+        :root {
+            --bg-dark: #070707;
+            --card-bg: #1A1A1A;
+            --border-color: #2D2D2D;
+            --text-light: #FAFAFA;
+            --accent-green: #34D399; /* Sharper green (Positive) */
+            --accent-red: #F87171; /* Sharper red (Negative) */
+            --accent-blue: #3B82F6;
+            --neutral-purple: #A78BFA; /* ATH/Supply */
+            --header-bg: #101010;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        .data-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .data-card:hover {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.15);
+        }
+        .positive { color: var(--accent-green); }
+        .negative { color: var(--accent-red); }
+        .table-header {
+            cursor: pointer;
+            transition: color 0.15s ease;
+            user-select: none;
+        }
+        .table-header:hover {
+            color: var(--accent-blue);
+        }
+        .loading-dot { animation: bounce 1.4s infinite ease-in-out both; }
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+        
+        /* Sparkline Styles */
+        .sparkline-positive { stroke: var(--accent-green); }
+        .sparkline-negative { stroke: var(--accent-red); }
+
+        /* Volatility/RSI Coloring for 7D Trend Cell */
+        .trend-low-vol { background-color: rgba(52, 211, 153, 0.05); } 
+        .trend-med-vol { background-color: rgba(250, 204, 21, 0.1); } 
+        .trend-high-vol { background-color: rgba(248, 113, 113, 0.1); } 
+
+        /* Price Change Flash Animation */
+        .flash-green { animation: flash-green 1s ease-out; }
+        .flash-red { animation: flash-red 1s ease-out; }
+        @keyframes flash-green {
+            0% { background-color: rgba(52, 211, 153, 0.4); }
+            100% { background-color: transparent; }
+        }
+        @keyframes flash-red {
+            0% { background-color: rgba(248, 113, 113, 0.4); }
+            100% { background-color: transparent; }
+        }
+
+        /* Heatmap Bar Styles for 24h Change */
+        .change-cell {
+            position: relative;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .change-bar {
+            position: absolute;
+            top: 0;
+            left: 0; 
+            height: 100%;
+            transition: width 0.3s ease;
+            opacity: 0.15;
+            z-index: 0;
+        }
+        .change-bar.positive-bar { background-color: var(--accent-green); }
+        .change-bar.negative-bar { background-color: var(--accent-red); }
+        .change-value {
+            position: relative;
+            z-index: 1; 
+            font-weight: bold;
+            text-align: right;
+            padding-right: 0.5rem;
+            min-width: 5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar (Website Look) -->
+    <nav class="bg-header-bg border-b border-gray-700/50 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-8xl mx-auto px-4 sm:px-8 py-3 flex justify-between items-center">
+            <a href="#dashboard" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-600">
+                CryptoPulse
+            </a>
+            <div id="nav-links" class="flex space-x-6 text-sm font-medium text-gray-400">
+                <a href="#dashboard" data-page="dashboard" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Dashboard</a>
+                <a href="#movers" data-page="movers" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Market Movers</a>
+                <a href="#portfolio" data-page="portfolio" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Portfolio Tracker</a>
+                <a href="#resources" data-page="resources" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Resources</a>
+                <a href="#about" data-page="about" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">About</a>
+                <!-- NEW SECONDARY LINKS -->
+                <a href="#security" data-page="security" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400 hidden lg:inline">Security</a>
+                <a href="#careers" data-page="careers" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400 hidden lg:inline">Careers</a>
+            </div>
+            <div id="loading-indicator" class="hidden">
+                <div class="flex items-center space-x-2 bg-gray-900 px-3 py-1 rounded-full border border-teal-500/20">
+                    <div class="w-2 h-2 bg-teal-400 rounded-full loading-dot"></div>
+                    <div class="w-2 h-2 bg-blue-400 rounded-full loading-dot"></div>
+                    <span class="text-xs text-gray-400">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content Area -->
+    <main class="flex-grow p-4 sm:p-8">
+        <div class="max-w-8xl mx-auto">
+            
+            <!-- Global Market Stats (Always visible) -->
+            <section id="global-stats" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="data-card p-6 rounded-xl flex items-center justify-center h-24 text-gray-500 md:col-span-3">Loading Global Data...</div>
+            </section>
+
+            <!-- Conditional Content View: Dashboard or Sample Page -->
+            <div id="main-content-view">
+                
+                <!-- 1. DASHBOARD VIEW (Market Table) -->
+                <div id="dashboard-view" class="view-content">
+                    <header class="mb-8 pt-4 pb-6 border-b border-gray-700">
+                        <h1 class="text-5xl font-extrabold text-white mb-2 tracking-tight">
+                            Top 50 Market Analysis
+                        </h1>
+                        <p class="text-gray-400 mb-4 text-lg">Real-time market data with advanced filtering and key financial metrics.</p>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm font-medium text-gray-500">
+                            <div id="status-bar" class="flex items-center space-x-2 mb-2 sm:mb-0">
+                                <i data-lucide="clock" class="w-4 h-4 text-teal-400" aria-hidden="true"></i>
+                                <span id="last-updated" class="text-gray-400">Establishing connection...</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    <!-- Control Panel: Filter and Metric Selection -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div class="md:col-span-2">
+                            <input type="text" id="coin-search" placeholder="Filter coin by name or symbol..."
+                                class="w-full p-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                                oninput="filterTable()">
+                        </div>
+                        
+                        <div class="data-card p-1 rounded-xl flex items-center space-x-3">
+                            <i data-lucide="filter" class="w-5 h-5 ml-2 text-yellow-500" aria-hidden="true"></i>
+                            <select id="direction-select" onchange="filterTable()"
+                                    class="w-full bg-transparent text-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-yellow-500 transition duration-150">
+                                <option value="all">Market Direction: All</option>
+                                <option value="gainers">Gainers (24h+)</option>
+                                <option value="losers">Losers (24h-)</option>
+                            </select>
+                        </div>
+
+                        <div class="data-card p-1 rounded-xl flex items-center space-x-3">
+                            <i data-lucide="layout-list" class="w-5 h-5 ml-2 text-neutral-purple" aria-hidden="true"></i>
+                            <select id="metric-select" onchange="toggleMetric()"
+                                    class="w-full bg-transparent text-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-purple transition duration-150">
+                                <option value="none" selected>Extra Supply/ATH Data</option>
+                                <option value="total_supply">Total Supply</option>
+                                <option value="circulating_supply">Circulating Supply</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Main Content (Table) -->
+                    <div class="overflow-x-auto rounded-xl shadow-2xl">
+                        <table class="min-w-full rounded-xl overflow-hidden">
+                            <thead class="bg-[#1F2937] uppercase text-xs text-gray-400 tracking-wider sticky top-0 border-b border-gray-700">
+                                <tr>
+                                    <th class="py-4 px-4 text-left">#</th>
+                                    <th class="py-4 px-4 text-left">Coin</th>
+                                    <th id="sort-price" data-sort="current_price" class="py-4 px-4 text-right table-header">Price <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
+                                    <th id="sort-market-cap" data-sort="market_cap" class="py-4 px-4 text-right table-header hidden sm:table-cell">Mkt Cap <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
+                                    <th id="sort-volume" data-sort="total_volume" class="py-4 px-4 text-right table-header hidden md:table-cell">24h Vol <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
+                                    <th id="sort-ath-change" data-sort="ath_change_percentage" class="py-4 px-4 text-right table-header hidden lg:table-cell">ATH % <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
+                                    <th id="sort-change24h" data-sort="price_change_percentage_24h_in_currency" class="py-4 px-4 text-right table-header">24h % <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
+                                    <th class="py-4 px-4 text-center hidden xl:table-cell">7D Trend</th>
+                                    <th id="extra-metric-header" class="py-4 px-4 text-right table-header extra-metric hidden 2xl:table-cell" data-sort="total_supply">
+                                        <span id="extra-metric-label">Supply</span> <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="crypto-table-body" class="divide-y divide-gray-800">
+                                <tr><td colspan="9" class="text-center py-10 text-gray-600" id="initial-message">Establishing connection and fetching initial market data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. SAMPLE PAGE CONTENT CONTAINER (Hidden by default) -->
+                <div id="sample-page-content" class="view-content hidden p-4 sm:p-8 bg-gray-900 rounded-xl">
+                    <!-- Dynamic content will be injected here -->
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Rich Footer (Website Look) -->
+    <footer class="mt-12 bg-header-bg border-t border-gray-700/50 p-8">
+        <div class="max-w-8xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+            <div>
+                <h4 class="font-bold text-white mb-3">Company</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#about" class="hover:text-teal-400">Our Mission</a></li>
+                    <!-- UPDATED FOOTER LINKS -->
+                    <li><a href="#security" class="hover:text-teal-400">Security & Compliance</a></li>
+                    <li><a href="#careers" class="hover:text-teal-400">Careers (12 Openings)</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-3">Data & Tools</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#movers" class="hover:text-teal-400">Market Movers Index</a></li>
+                    <li><a href="#portfolio" class="hover:text-teal-400">Portfolio Analytics</a></li>
+                    <li><a href="#resources" class="hover:text-teal-400">Developer API</a></li>
+                </ul>
+            </div>
+            <div class="col-span-2 md:col-span-2">
+                <h4 class="font-bold text-white mb-3">Financial Disclosure</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    All market data is for informational and analysis purposes only and should not be considered financial advice. CryptoPulse Pro encourages all users to conduct their own research before making investment decisions. Trading digital assets carries significant risk.
+                </p>
+                <p class="mt-4 text-xs text-gray-600">&copy; 2025 CryptoPulse Pro. All rights reserved. V5.2</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Constants
+        const API_BASE = 'https://api.coingecko.com/api/v3/';
+        const TOP_N_COINS = 50; 
+        const CRYPTO_ENDPOINTS = [
+            { url: API_BASE + 'coins/markets?vs_currency=usd&order=market_cap_desc&per_page=' + TOP_N_COINS + '&page=1&sparkline=true&price_change_percentage=1h%2C24h%2C7d', key: 'CoinGecko-Market' },
+            { url: API_BASE + 'coins/markets?vs_currency=usd&order=market_cap_desc&per_page=15&page=1&sparkline=true', key: 'CoinGecko-Fallback' },
+        ];
+        const GLOBAL_ENDPOINTS = [
+            { url: API_BASE + 'global', key: 'CoinGecko-Global' },
+        ];
+        // Note: Keeping the refresh interval high to respect external API limits, but the experience is smoother now.
+        const REFRESH_INTERVAL_MS = 60 * 60 * 1000; 
+        const MAX_RETRIES = 3;
+        const BASE_DELAY_MS = 1500;
+        const CACHE_KEY = 'cryptoDashboardCacheProV5';
+        const CACHE_KEY_CRYPTO = 'cryptoDashboardCacheProV5';
+        const CACHE_KEY_GLOBAL = 'cryptoGlobalCacheProV5';
+
+        const METRIC_KEY = 'selectedMetricV5';
+
+        // State & DOM Elements
+        const tableBody = document.getElementById('crypto-table-body');
+        const lastUpdatedEl = document.getElementById('last-updated');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const initialMessage = document.getElementById('initial-message');
+        const globalStatsEl = document.getElementById('global-stats');
+        const coinSearchEl = document.getElementById('coin-search');
+        const metricSelectEl = document.getElementById('metric-select');
+        const directionSelectEl = document.getElementById('direction-select');
+        const extraMetricHeaderEl = document.getElementById('extra-metric-header');
+        const extraMetricLabelEl = document.getElementById('extra-metric-label');
+        const dashboardView = document.getElementById('dashboard-view');
+        const samplePageContent = document.getElementById('sample-page-content');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+
+        let currentData = []; 
+        let currentSort = { key: 'market_cap_rank', direction: 'asc' };
+        let previousPrices = {}; 
+        let selectedMetric = 'none'; 
+        let currentView = '';
+
+        // --- Routing and View Management ---
+
+        /** Updates the visibility and content based on the URL hash. */
+        const updateView = () => {
+            const hash = window.location.hash.slice(1) || 'dashboard';
+            currentView = hash;
+
+            // Update active navigation link styling
+            navLinks.forEach(link => {
+                link.classList.remove('text-teal-400', 'border-teal-400');
+                link.classList.add('text-gray-400', 'border-transparent');
+                if (link.dataset.page === currentView) {
+                    link.classList.add('text-teal-400', 'border-teal-400', 'font-bold');
+                    link.classList.remove('text-gray-400');
+                }
+            });
+
+            // Toggle views
+            const isDashboard = currentView === 'dashboard';
+            
+            dashboardView.classList.toggle('hidden', !isDashboard);
+            samplePageContent.classList.toggle('hidden', isDashboard);
+            
+            if (isDashboard) {
+                // Ensure data is loaded when navigating back to the dashboard
+                if (currentData.length === 0) {
+                    loadDashboardData();
+                } else {
+                    filterTable(); // Re-render the table with current data/filters
+                }
+            } else {
+                renderSamplePage(currentView);
+            }
+
+            if (window.lucide) {
+    lucide.createIcons();
+}
+
+        };
+
+        /** Renders content for the "fake" pages. */
+        const renderSamplePage = (view) => {
+            let title = '';
+            let icon = '';
+            let content = '';
+
+            switch(view) {
+                case 'movers':
+                    title = 'Market Movers & Dynamic Trends';
+                    icon = 'trending-up';
+                    content = `
+                        <p class="text-gray-300 text-lg mb-8">Analyze daily performance heatmaps and identify emerging market trends. Our proprietary algorithm tracks volume spikes and social media sentiment to highlight coins poised for breakout or breakdown.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                            <div class="data-card p-6 rounded-xl border-green-500/30"><h4 class="text-sm text-yellow-400 mb-2 font-bold flex items-center"><i data-lucide="zap" class="w-4 h-4 mr-2" aria-hidden="true"></i> High Momentum Sector</h4><p class="text-3xl font-extrabold positive">RWA (Real World Assets)</p><p class="text-gray-400 text-sm">Average 7D increase of +21.5%</p></div>
+                            <div class="data-card p-6 rounded-xl border-red-500/30"><h4 class="text-sm text-red-400 mb-2 font-bold flex items-center"><i data-lucide="shield-off" class="w-4 h-4 mr-2" aria-hidden="true"></i> Low Sentiment Alert</h4><p class="text-3xl font-extrabold negative">Gaming Tokens (GALA, AXS)</p><p class="text-gray-400 text-sm">Average 7D decrease of -8.1%</p></div>
+                            <div class="data-card p-6 rounded-xl border-blue-500/30"><h4 class="text-sm text-blue-400 mb-2 font-bold flex items-center"><i data-lucide="activity" class="w-4 h-4 mr-2" aria-hidden="true"></i> Volatility Index (CPVI)</h4><p class="text-3xl font-extrabold text-blue-400">78/100</p><p class="text-gray-400 text-sm">High-risk, high-reward conditions.</p></div>
+                        </div>
+
+                        <h3 class="text-3xl font-bold mt-10 mb-4 text-white border-b border-gray-700 pb-2">24h Gainers & Losers (Mock Data)</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-semibold positive mb-4 flex items-center"><i data-lucide="arrow-up" class="w-5 h-5 mr-2" aria-hidden="true"></i> Top 5 Gainers</h4>
+                                <ul class="space-y-3">
+                                    <li class="data-card p-4 rounded-lg flex justify-between items-center border-l-4 border-green-500"><span class="font-medium text-white">Ethereum Classic (ETC)</span><span class="font-mono positive">+18.4%</span></li>
+                                    <li class="data-card p-4 rounded-lg flex justify-between items-center border-l-4 border-green-500"><span class="font-medium text-white">Cosmos Hub (ATOM)</span><span class="font-mono positive">+15.1%</span></li>
+                                    <li class="data-card p-4 rounded-lg flex justify-between items-center border-l-4 border-green-500"><span class="font-medium text-white">The Graph (GRT)</span><span class="font-mono positive">+13.9%</span></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold negative mb-4 flex items-center"><i data-lucide="arrow-down" class="w-5 h-5 mr-2" aria-hidden="true"></i> Top 5 Losers</h4>
+                                <ul class="space-y-3">
+                                    <li class="data-card p-4 rounded-lg flex justify-between items-center border-l-4 border-red-500"><span class="font-medium text-white">Filecoin (FIL)</span><span class="font-mono negative">-9.2%</span></li>
+                                    <li class="data-card p-4 rounded-lg flex justify-between items-center border-l-4 border-red-500"><span class="font-medium text-white">Near Protocol (NEAR)</span><span class="font-mono negative">-7.8%</span></li>
+                                    <li class="data-card p-4 rounded-lg flex justify-between items-center border-l-4 border-red-500"><span class="font-medium text-white">Aptos (APT)</span><span class="font-mono negative">-6.5%</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'portfolio':
+                    title = 'Personal Portfolio Tracker';
+                    icon = 'briefcase';
+                    content = `
+                        <p class="text-gray-300 text-lg mb-6">Securely track your digital asset holdings, calculate real-time gains and losses, and monitor your portfolio diversification across different sectors. Our proprietary risk analysis engine helps you balance volatility.</p>
+                        <div class="data-card p-8 rounded-xl text-center mb-8">
+                            <i data-lucide="lock" class="w-12 h-12 mx-auto text-blue-500 mb-4" aria-hidden="true"></i>
+                            <h3 class="text-3xl font-bold text-white mb-2">Login Required to Access Private Data</h3>
+                            <p class="text-gray-400">To access your private portfolio data, please sign in or connect your wallet to enable real-time tracking.</p>
+                            <button class="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition duration-150 shadow-lg">Connect Wallet</button>
+                        </div>
+                        
+                        <h3 class="text-3xl font-bold mt-10 mb-4 text-white border-b border-gray-700 pb-2">Simulated Portfolio Analytics</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div class="data-card p-4 rounded-lg"><h4 class="text-sm text-gray-400 mb-2 font-bold">Total Value (Sim.)</h4><p class="text-xl font-extrabold text-white">$45,210.35</p></div>
+                            <div class="data-card p-4 rounded-lg"><h4 class="text-sm text-gray-400 mb-2 font-bold">Risk Score (Low)</h4><p class="text-xl font-extrabold positive">3.5/10</p></div>
+                            <div class="data-card p-4 rounded-lg"><h4 class="text-sm text-gray-400 mb-2 font-bold">CAGR (Annual)</h4><p class="text-xl font-extrabold text-yellow-400">+38.1%</p></div>
+                            <div class="data-card p-4 rounded-lg"><h4 class="text-sm text-gray-400 mb-2 font-bold">Diversification</h4><p class="text-xl font-extrabold text-neutral-purple">7 Assets</p></div>
+                        </div>
+                    `;
+                    break;
+                case 'resources':
+                    title = 'Research & Education Hub';
+                    icon = 'book-open';
+                    content = `
+                        <p class="text-gray-300 text-lg mb-8">Access our comprehensive library of whitepapers, educational articles, and video tutorials to help you understand the core concepts of decentralized finance and blockchain technology. Stay informed with our deep dives.</p>
+                        
+                        <h3 class="text-3xl font-bold mb-4 text-white border-b border-gray-700 pb-2">Featured Documentation</h3>
+                        <ul class="space-y-4">
+                            <li class="data-card p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-800/80 cursor-pointer transition">
+                                <i data-lucide="zap" class="w-6 h-6 text-yellow-500" aria-hidden="true"></i>
+                                <div><h4 class="font-bold text-white">Beginner's Guide to DeFi</h4><p class="text-gray-400 text-sm">Understanding AMMs, yield farming, and liquidity pools.</p></div>
+                                <i data-lucide="arrow-right" class="w-5 h-5 text-gray-500 ml-auto" aria-hidden="true"></i>
+                            </li>
+                            <li class="data-card p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-800/80 cursor-pointer transition">
+                                <i data-lucide="pie-chart" class="w-6 h-6 text-neutral-purple" aria-hidden="true"></i>
+                                <div><h4 class="font-bold text-white">Tokenomics Deep Dive</h4><p class="text-gray-400 text-sm">Analyzing supply schedules and inflation models.</p></div>
+                                <i data-lucide="arrow-right" class="w-5 h-5 text-gray-500 ml-auto" aria-hidden="true"></i>
+                            </li>
+                            <li class="data-card p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-800/80 cursor-pointer transition">
+                                <i data-lucide="shield" class="w-6 h-6 text-teal-400" aria-hidden="true"></i>
+                                <div><h4 class="font-bold text-white">Security & Wallet Best Practices</h4><p class="text-gray-400 text-sm">How to secure your private keys and avoid phishing scams.</p></div>
+                                <i data-lucide="arrow-right" class="w-5 h-5 text-gray-500 ml-auto" aria-hidden="true"></i>
+                            </li>
+                        </ul>
+                        
+                        <h3 class="text-3xl font-bold mt-10 mb-4 text-white border-b border-gray-700 pb-2">Crypto Glossary</h3>
+                        <div class="data-card p-6 rounded-xl text-gray-300 text-sm grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div><span class="font-semibold text-white">AMM:</span> Automated Market Maker</div>
+                            <div><span class="font-semibold text-white">DAO:</span> Decentralized Autonomous Organization</div>
+                            <div><span class="font-semibold text-white">L1:</span> Layer 1 Blockchain</div>
+                            <div><span class="font-semibold text-white">APY:</span> Annual Percentage Yield</div>
+                        </div>
+                    `;
+                    break;
+                case 'about':
+                    title = 'About CryptoPulse Pro';
+                    icon = 'heart-handshake';
+                    content = `
+                        <p class="text-gray-300 text-lg mb-8">CryptoPulse Pro was founded in 2021 with a mission to demystify digital asset trading. We provide institutional-grade data and analytics to retail investors, empowering informed, data-driven decisions.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
+                            <div>
+                                <h4 class="text-2xl font-bold text-teal-400 mb-3 flex items-center"><i data-lucide="rocket" class="w-6 h-6 mr-2" aria-hidden="true"></i> Our Technology</h4>
+                                <p class="text-gray-400 text-sm">We leverage a redundant multi-API aggregation system and custom volatility scoring models to ensure high data integrity and timely updates, even during extreme market events.</p>
+                            </div>
+                            <div>
+                                <h4 class="text-2xl font-bold text-blue-400 mb-3 flex items-center"><i data-lucide="user-cog" class="w-6 h-6 mr-2" aria-hidden="true"></i> Leadership</h4>
+                                <p class="text-gray-400 text-sm mb-2"><span class="font-semibold text-white">Dr. Elias Vance (CEO)</span></p>
+                                <p class="text-gray-500 text-xs">Former Quant Analyst at Citadel, focused on market microstructure.</p>
+                                <p class="text-gray-400 text-sm mt-4 mb-2"><span class="font-semibold text-white">Ava Sharma (CTO)</span></p>
+                                <p class="text-gray-500 text-xs">Blockchain Engineer, architected our secure data pipeline.</p>
+                            </div>
+                            <div>
+                                <h4 class="text-2xl font-bold text-yellow-400 mb-3 flex items-center"><i data-lucide="award" class="w-6 h-6 mr-2" aria-hidden="true"></i> Our Milestones</h4>
+                                <ul class="list-disc pl-5 text-gray-400 space-y-2 text-sm">
+                                    <li>2021 Q4: Initial Beta Launch</li>
+                                    <li>2023 Q1: Integrated Multi-Exchange Feeds</li>
+                                    <li>2024 Q3: Released CPVI Volatility Index</li>
+                                    <li>2025 Q1: Crossed 500,000 Active Users</li>
+                                </ul>
+                            </div>
+<div>
+    <h4 class="text-2xl font-bold text-purple-400 mb-3 flex items-center"><i data-lucide="target" class="w-6 h-6 mr-2"></i> Our Mission</h4>
+    <p class="text-gray-400 text-sm">We aim to democratize access to institutional-grade analytics for every investor, regardless of portfolio size.</p>
+</div>
+</div> <!-- closes the grid -->
+</section> <!-- closes the About section -->
+
+                    `;
+                    break;
+                case 'security':
+                    title = 'Security & Regulatory Compliance';
+                    icon = 'lock-keyhole';
+                    content = `
+                        <p class="text-gray-300 text-lg mb-8">Trust and transparency are paramount. CryptoPulse Pro adheres to strict security protocols and global regulatory guidelines to protect user data and ensure market integrity.</p>
+                        
+                        <h3 class="text-3xl font-bold mb-4 text-white border-b border-gray-700 pb-2">Data Protection & Architecture</h3>
+                        <div class="space-y-6">
+                            <div class="data-card p-6 rounded-xl border-l-4 border-teal-500">
+                                <h4 class="font-bold text-white flex items-center mb-1"><i data-lucide="shield-check" class="w-5 h-5 mr-2 text-teal-400" aria-hidden="true"></i> Encrypted Pipelines</h4>
+                                <p class="text-gray-400 text-sm">All data transmission, both internally and externally, is secured using **AES-256 encryption**. Our infrastructure is hosted on private cloud VPCs.</p>
+                            </div>
+                            <div class="data-card p-6 rounded-xl border-l-4 border-teal-500">
+                                <h4 class="font-bold text-white flex items-center mb-1"><i data-lucide="fingerprint" class="w-5 h-5 mr-2 text-teal-400" aria-hidden="true"></i> Authentication & Access</h4>
+                                <p class="text-gray-400 text-sm">We enforce Multi-Factor Authentication (MFA) for all administrative and high-privilege access points. User portfolio data is securely **pseudo-anonymized** and segregated.</p>
+                            </div>
+                        </div>
+
+                        <h3 class="text-3xl font-bold mt-10 mb-4 text-white border-b border-gray-700 pb-2">Regulatory Posture</h3>
+                        <ul class="list-disc pl-5 text-gray-400 space-y-3 text-sm">
+                            <li><span class="font-semibold text-white">AML/KYC Ready:</span> Our platform architecture is designed to support evolving Anti-Money Laundering (AML) and Know Your Customer (KYC) requirements globally.</li>
+                            <li><span class="font-semibold text-white">GDPR Compliant:</span> Full adherence to European data privacy standards, providing users control over their data.</li>
+                            <li><span class="font-semibold text-white">Continuous Auditing:</span> We partner with top-tier cybersecurity firms for quarterly penetration testing and security audits.</li>
+                        </ul>
+                    `;
+                    break;
+                case 'careers':
+                    title = 'Join the CryptoPulse Team';
+                    icon = 'briefcase';
+                    content = `
+                        <p class="text-gray-300 text-lg mb-8">We're building the future of financial intelligence. If you are passionate about blockchain, data science, or web development, explore our open roles and help us empower millions of investors.</p>
+                        
+                        <h3 class="text-3xl font-bold mb-4 text-white border-b border-gray-700 pb-2">Open Positions (12)</h3>
+                        <div class="space-y-4">
+                            <!-- Role 1 -->
+                            <div class="data-card p-6 rounded-xl flex justify-between items-center hover:bg-gray-800/80 cursor-pointer transition">
+                                <div>
+                                    <h4 class="font-bold text-white text-xl">Senior Blockchain Engineer</h4>
+                                    <p class="text-gray-400 text-sm flex items-center space-x-3 mt-1">
+                                        <i data-lucide="code" class="w-4 h-4 text-blue-400" aria-hidden="true"></i> <span>Engineering</span>
+                                        <i data-lucide="map-pin" class="w-4 h-4 text-blue-400" aria-hidden="true"></i> <span>Remote / London</span>
+                                    </p>
+                                </div>
+                                <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition duration-150">Apply</button>
+                            </div>
+                            <!-- Role 2 -->
+                            <div class="data-card p-6 rounded-xl flex justify-between items-center hover:bg-gray-800/80 cursor-pointer transition">
+                                <div>
+                                    <h4 class="font-bold text-white text-xl">Quantitative Analyst (Market Volatility)</h4>
+                                    <p class="text-gray-400 text-sm flex items-center space-x-3 mt-1">
+                                        <i data-lucide="trending-up" class="w-4 h-4 text-green-400" aria-hidden="true"></i> <span>Analytics</span>
+                                        <i data-lucide="map-pin" class="w-4 h-4 text-green-400" aria-hidden="true"></i> <span>New York</span>
+                                    </p>
+                                </div>
+                                <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition duration-150">Apply</button>
+                            </div>
+                            <!-- Role 3 -->
+                            <div class="data-card p-6 rounded-xl flex justify-between items-center hover:bg-gray-800/80 cursor-pointer transition">
+                                <div>
+                                    <h4 class="font-bold text-white text-xl">Head of Regulatory Affairs</h4>
+                                    <p class="text-gray-400 text-sm flex items-center space-x-3 mt-1">
+                                        <i data-lucide="gavel" class="w-4 h-4 text-yellow-400" aria-hidden="true"></i> <span>Compliance</span>
+                                        <i data-lucide="map-pin" class="w-4 h-4 text-yellow-400" aria-hidden="true"></i> <span>Remote</span>
+                                    </p>
+                                </div>
+                                <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition duration-150">Apply</button>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-3xl font-bold mt-10 mb-4 text-white border-b border-gray-700 pb-2">Why CryptoPulse?</h3>
+                        <ul class="list-disc pl-5 text-gray-400 space-y-2 text-sm">
+                            <li>Competitive salary, equity options, and a crypto bonus pool.</li>
+                            <li>Unlimited PTO and flexible remote work policies.</li>
+                            <li>Opportunity to work on bleeding-edge blockchain infrastructure.</li>
+                        </ul>
+                    `;
+                    break;
+                default:
+                    title = 'Page Not Found';
+                    icon = 'alert-triangle';
+                    content = `<p class="text-red-400">The page you are looking for does not exist. Please use the navigation links.</p>`;
+            }
+
+            samplePageContent.innerHTML = `
+                <header class="mb-8 pb-4 border-b border-gray-700 flex items-center space-x-4">
+                    <i data-lucide="${icon}" class="w-8 h-8 text-white" aria-hidden="true"></i>
+                    <h1 class="text-4xl font-extrabold text-white tracking-tight">${title}</h1>
+                </header>
+                ${content}
+            `;
+            if (window.lucide) {
+    lucide.createIcons();
+}
+
+        };
+
+
+        // --- Helper Functions ---
+
+        /** Formats a number into a locale-specific currency string. */
+        const formatCurrency = (value, options = {}) => {
+            if (value === null || value === undefined) return 'N/A';
+            const defaults = {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: (value < 1 && value !== 0) ? 6 : 2,
+            };
+            return new Intl.NumberFormat('en-US', { ...defaults, ...options }).format(value);
+        };
+
+        /** Formats a number into a clean, shortened string (M, B, T). */
+        const formatLargeNumber = (num, decimals = 0) => {
+            if (num === null || num === undefined) return 'N/A';
+            if (num < 1000) return num.toFixed(decimals);
+            const units = ['', 'K', 'M', 'B', 'T'];
+            let unitIndex = 0;
+            let n = num;
+            
+            while (n >= 1000 && unitIndex < units.length - 1) {
+                n /= 1000;
+                unitIndex++;
+            }
+            
+            return n.toFixed(decimals) + units[unitIndex];
+        };
+
+        /** Formats a number as a percentage string. */
+        const formatPercent = (value, decimals = 2) => {
+            if (value === null || value === undefined) return 'N/A';
+            const sign = value >= 0 ? '+' : '';
+            return sign + value.toFixed(decimals) + '%';
+        };
+
+        /** Renders a simple SVG sparkline for the 7-day price data. */
+        const renderSparkline = (prices, change) => {
+            if (!prices || prices.length < 2) return '';
+
+            const max = Math.max(...prices);
+            const min = Math.min(...prices);
+            let range = max - min;
+            if (range === 0) range = 1e-6;
+
+            const width = 100;
+            const height = 30;
+            const points = prices.map((price, index) => {
+                const x = (index / (prices.length - 1)) * width;
+                const y = height - ((price - min) / range) * height;
+                return `${x},${y}`;
+            }).join(' ');
+
+            const colorClass = change >= 0 ? 'sparkline-positive' : 'sparkline-negative';
+
+            return `
+                <svg viewBox="0 0 ${width} ${height}" class="w-full h-8" preserveAspectRatio="none">
+                    <polyline fill="none" class="${colorClass}" stroke-width="1.5" points="${points}" />
+                </svg>
+            `;
+        };
+        
+        // --- Multi-Source Data Fetching with Fallback and Caching ---
+
+        /** Attempts to fetch data from an array of endpoints with exponential backoff and caching. */
+        const tryFetchMultiple = async (endpoints, dataKey) => {
+            loadingIndicator.classList.remove('hidden');
+            const cacheKey = (dataKey === 'CoinGecko-Global') ? CACHE_KEY_GLOBAL : CACHE_KEY_CRYPTO;
+            const cached = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+            const cachedData = cached[dataKey];
+            const timestamp = cached.timestamp || 0;
+
+            const now = Date.now();
+
+            if (cachedData && (now - timestamp) < REFRESH_INTERVAL_MS) {
+                loadingIndicator.classList.add('hidden');
+                return { data: cachedData, timestamp, source: 'Cache' };
+            }
+
+            let data = null;
+            let sourceKey = null;
+
+            for (const endpoint of endpoints) {
+                for (let i = 0; i < MAX_RETRIES; i++) {
+                    try {
+                        const response = await fetch(endpoint.url);
+                        if (!response.ok) throw new Error(`HTTP status: ${response.status}`);
+                        data = await response.json();
+                        sourceKey = endpoint.key;
+                        break; 
+                    } catch (error) {
+                        if (i < MAX_RETRIES - 1) {
+                            const delay = BASE_DELAY_MS * Math.pow(2, i);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                        }
+                    }
+                }
+                if (data) break; 
+            }
+            loadingIndicator.classList.add('hidden');
+
+                if (data) {
+                    const cacheKey = (dataKey === 'CoinGecko-Global') ? CACHE_KEY_GLOBAL : CACHE_KEY_CRYPTO;
+                    const cached = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+                    cached[dataKey] = data;
+                    cached.timestamp = now;
+                    localStorage.setItem(cacheKey, JSON.stringify(cached));
+                    return { data, timestamp: now, source: sourceKey };
+                }
+
+
+            if (cachedData) {
+                 return { data: cachedData, timestamp, source: 'Stale Cache' };
+            }
+
+            return { data: null, timestamp: 0, source: 'Failed' };
+        };
+
+        /** Main function to fetch all data and manage state. */
+        const loadDashboardData = async () => {
+            lastUpdatedEl.textContent = 'Fetching new data...';
+            initialMessage.parentElement.classList.remove('hidden'); 
+
+            const [cryptoResponse, globalResponse] = await Promise.all([
+                tryFetchMultiple(CRYPTO_ENDPOINTS, 'cryptoData'),
+                tryFetchMultiple(GLOBAL_ENDPOINTS, 'globalData')
+            ]);
+
+            const now = Date.now();
+
+            // 1. Handle Crypto Data
+            if (cryptoResponse.data) {
+                previousPrices = currentData.reduce((acc, coin) => {
+                    acc[coin.id] = coin.current_price;
+                    return acc;
+                }, {});
+
+                currentData = cryptoResponse.data;
+                initializeMetricPreference();
+                
+                sortAndRender(currentData, currentSort.key, currentSort.direction);
+                updateLastUpdated(cryptoResponse.timestamp || now);
+            } else {
+                initialMessage.textContent = 'CRITICAL ERROR: Could not load cryptocurrency market data from any source.';
+                initialMessage.parentElement.classList.remove('hidden');
+                updateLastUpdated(0);
+            }
+
+            // 2. Handle Global Data
+            if (globalResponse.data) {
+                renderGlobalStats(globalResponse.data.data);
+            } else {
+                globalStatsEl.innerHTML = '<div class="data-card p-6 rounded-xl flex items-center justify-center h-24 text-red-400 md:col-span-3 font-semibold">Global Market Snapshot Unavailable</div>';
+            }
+
+            if (window.lucide) {
+    lucide.createIcons();
+}
+
+        };
+
+        /** Renders the top bar with global market statistics. */
+        const renderGlobalStats = (globalData) => {
+            const { total_market_cap, total_volume, market_cap_percentage } = globalData;
+            
+            const btcDominance = formatPercent(market_cap_percentage.btc, 2);
+            const ethDominance = formatPercent(market_cap_percentage.eth, 2);
+
+            const totalMarketCapUSD = total_market_cap.usd || 0;
+            const totalVolumeUSD = total_volume.usd || 0;
+
+            globalStatsEl.innerHTML = `
+                <div class="data-card p-4 rounded-xl flex flex-col justify-center">
+                    <h3 class="text-sm text-gray-400 font-semibold mb-1 flex items-center"><i data-lucide="scale" class="w-4 h-4 mr-2 text-teal-400" aria-hidden="true"></i> Total Market Cap</h3>
+                    <p class="text-2xl font-extrabold text-white">${formatCurrency(totalMarketCapUSD)}</p>
+                </div>
+                <div class="data-card p-4 rounded-xl flex flex-col justify-center">
+                    <h3 class="text-sm text-gray-400 font-semibold mb-1 flex items-center"><i data-lucide="bar-chart-3" class="w-4 h-4 mr-2 text-blue-400" aria-hidden="true"></i> 24h Volume</h3>
+                    <p class="text-2xl font-extrabold text-white">${formatCurrency(totalVolumeUSD)}</p>
+                </div>
+                <div class="data-card p-4 rounded-xl flex flex-col justify-center">
+                    <h3 class="text-sm text-gray-400 font-semibold mb-1 flex items-center"><i data-lucide="shield-half" class="w-4 h-4 mr-2 text-yellow-500" aria-hidden="true"></i> Dominance (BTC/ETH)</h3>
+                    <p class="text-2xl font-extrabold text-white">${btcDominance} / ${ethDominance}</p>
+                </div>
+            `;
+            if (window.lucide) {
+    lucide.createIcons();
+}
+
+        };
+
+        /** Renders the main table rows from the filtered and sorted data. */
+        const renderTable = (data) => {
+            tableBody.innerHTML = '';
+            initialMessage.parentElement.classList.add('hidden'); 
+
+            if (!data || data.length === 0) {
+                const searchTerm = coinSearchEl.value.trim();
+tableBody.innerHTML = `
+<tr>
+  <td colspan="9" class="text-center py-10 text-red-500 font-bold">
+    CRITICAL ERROR: Could not load cryptocurrency market data. 
+    <button onclick="loadDashboardData()" class="ml-4 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">
+      Retry
+    </button>
+  </td>
+</tr>`;
+                return;
+            }
+
+            // Determine the maximum absolute 24h/7d change for heatmap/volatility scales
+            const maxChangeMagnitude24h = data.reduce((max, coin) => Math.max(max, Math.abs(coin.price_change_percentage_24h_in_currency || 0)), 0);
+            const maxChangeMagnitude7d = data.reduce((max, coin) => Math.max(max, Math.abs(coin.price_change_percentage_7d_in_currency || 0)), 0);
+
+            data.forEach(coin => {
+                const change24h = coin.price_change_percentage_24h_in_currency;
+                const change7d = coin.price_change_percentage_7d_in_currency;
+                const athChange = coin.ath_change_percentage;
+
+                const changeClass24h = change24h >= 0 ? 'positive' : 'negative';
+                const changeClass7d = change7d >= 0 ? 'positive' : 'negative';
+                const athClass = athChange <= -50 ? 'negative' : (athChange <= -20 ? 'text-yellow-500' : 'positive'); // Closer to ATH = Better
+
+                // Price change flash logic
+                let priceFlashClass = '';
+                const oldPrice = previousPrices[coin.id];
+                if (oldPrice !== undefined && oldPrice !== coin.current_price) {
+                    if (coin.current_price > oldPrice) {
+                        priceFlashClass = 'flash-green';
+                    } else if (coin.current_price < oldPrice) {
+                        priceFlashClass = 'flash-red';
+                    }
+                }
+
+                // Heatmap calculation (24h)
+                const changeMagnitude24h = Math.abs(change24h || 0);
+                const barWidth = maxChangeMagnitude24h > 0 ? (changeMagnitude24h / maxChangeMagnitude24h) * 90 : 0; 
+                const barClass = change24h >= 0 ? 'positive-bar' : 'negative-bar';
+
+                // Volatility/RSI Coloring (7d)
+                let trendColorClass = '';
+                const changeMagnitude7d = Math.abs(change7d || 0);
+                const volatilityRatio = maxChangeMagnitude7d > 0 ? changeMagnitude7d / maxChangeMagnitude7d : 0;
+
+                if (volatilityRatio < 0.2) {
+                    trendColorClass = 'trend-low-vol'; 
+                } else if (volatilityRatio < 0.5) {
+                    trendColorClass = 'trend-med-vol'; 
+                } else {
+                    trendColorClass = 'trend-high-vol'; 
+                }
+
+                // Render the extra metric cell
+                let extraMetricContent = 'N/A';
+                let extraMetricDisplayClass = 'hidden 2xl:table-cell';
+                let extraMetricValue = coin[selectedMetric];
+
+                if (selectedMetric !== 'none') {
+                    extraMetricDisplayClass = '2xl:table-cell';
+                    if (selectedMetric === 'total_supply' || selectedMetric === 'circulating_supply') {
+                        extraMetricContent = formatLargeNumber(extraMetricValue, 2);
+                    } else {
+                        extraMetricContent = extraMetricValue !== null && extraMetricValue !== undefined ? extraMetricValue.toLocaleString('en-US') : 'N/A';
+                    }
+                }
+                
+                const row = document.createElement('tr');
+                row.classList.add('border-b', 'border-gray-800', 'hover:bg-gray-800/50', 'transition', 'duration-200');
+
+                row.innerHTML = `
+                    <td class="py-4 px-4 font-semibold text-gray-500">${coin.market_cap_rank || 'N/A'}</td>
+                    <td class="py-4 px-4 text-left whitespace-nowrap">
+                        <div class="flex items-center space-x-3">
+                            <img src="${coin.image}" alt="${coin.name} logo" class="w-6 h-6 rounded-full" onerror="this.onerror=null;this.src='https://placehold.co/24x24/1F2937/FFFFFF?text=${coin.symbol.toUpperCase().slice(0, 2)}';">
+                            <span class="font-bold text-white">${coin.name}</span>
+                            <span class="text-gray-400 uppercase text-xs hidden md:inline">${coin.symbol}</span>
+                        </div>
+                    </td>
+                    <td class="price-cell py-4 px-4 text-right font-mono font-bold text-white ${priceFlashClass}">
+                        ${formatCurrency(coin.current_price)}
+                    </td>
+                    <td class="py-4 px-4 text-right text-gray-300 font-medium hidden sm:table-cell">${formatLargeNumber(coin.market_cap, 2)}</td>
+                    <td class="py-4 px-4 text-right text-gray-300 font-medium hidden md:table-cell">${formatLargeNumber(coin.total_volume, 2)}</td>
+                    <td class="py-4 px-4 text-right font-mono font-bold hidden lg:table-cell ${athClass}">${formatPercent(athChange, 1)}</td>
+                    <td class="change-cell py-4 px-4 text-right">
+                        <div class="change-bar ${barClass}" style="width: ${barWidth}%;"></div>
+                        <span class="change-value ${changeClass24h}">${formatPercent(change24h)}</span>
+                    </td>
+                    <td class="py-4 px-4 text-center hidden xl:table-cell ${trendColorClass} relative">
+                        ${renderSparkline(coin.sparkline_in_7d.price, change7d)}
+                        <span class="absolute top-1 right-2 text-xs font-semibold ${changeClass7d}">${formatPercent(change7d, 1)}</span>
+                    </td>
+                    <td class="py-4 px-4 text-right text-sm font-mono ${extraMetricDisplayClass} text-neutral-purple font-medium">
+                        ${extraMetricContent}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+
+                // Remove the flash class after animation
+                if (priceFlashClass) {
+                    setTimeout(() => {
+                        const priceCell = row.querySelector('.price-cell');
+                        if (priceCell) priceCell.classList.remove('flash-green', 'flash-red');
+                    }, 1000);
+                }
+            });
+            // Update the display of the extra column header/visibility
+            updateMetricDisplay();
+        };
+
+        /** Filters the data based on search input and market direction, then renders. */
+        const filterTable = () => {
+            if (currentView !== 'dashboard') return; 
+
+            const searchTerm = coinSearchEl.value.toLowerCase();
+            const directionFilter = directionSelectEl.value;
+            
+            // 1. Apply Search Filter
+            let filteredData = currentData.filter(coin =>
+                (coin.name || '').toLowerCase().includes(searchTerm) ||
+                (coin.symbol || '').toLowerCase().includes(searchTerm)
+            );
+
+            // 2. Apply Direction Filter
+            if (directionFilter === 'gainers') {
+                filteredData = filteredData.filter(coin => (coin.price_change_percentage_24h_in_currency || 0) > 0);
+            } else if (directionFilter === 'losers') {
+                filteredData = filteredData.filter(coin => (coin.price_change_percentage_24h_in_currency || 0) < 0);
+            }
+
+            renderTable(filteredData);
+
+            // Maintain the active sort indicator
+            document.querySelectorAll('.table-header i').forEach(icon => icon.classList.remove('rotate-180', 'text-teal-400'));
+            const headerEl = document.getElementById(`sort-${currentSort.key.replace(/_/g, '-')}`);
+            if (headerEl) {
+                const icon = headerEl.querySelector('i');
+                icon.classList.add('text-teal-400');
+                if (currentSort.direction === 'desc') {
+                    icon.classList.add('rotate-180');
+                }
+            }
+            updateMetricDisplay();
+        };
+
+        /** Sorts the data array, updates currentData, and calls filterTable to render. */
+        const sortAndRender = (data, key, direction) => {
+            const sortedData = [...data].sort((a, b) => {
+                const aValue = a[key] === null || a[key] === undefined ? (direction === 'asc' ? Infinity : -Infinity) : a[key];
+                const bValue = b[key] === null || b[key] === undefined ? (direction === 'asc' ? Infinity : -Infinity) : b[key];
+
+                if (aValue < bValue) return direction === 'asc' ? -1 : 1;
+                if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            currentData = sortedData;
+            currentSort = { key, direction };
+            filterTable();
+        };
+
+        /** Initializes metric preference from local storage. */
+        const initializeMetricPreference = () => {
+            selectedMetric = localStorage.getItem(METRIC_KEY) || 'none';
+            metricSelectEl.value = selectedMetric;
+            updateMetricDisplay();
+        };
+
+        /** Handles changing the extra metric column and persists the choice. */
+        const toggleMetric = () => {
+            selectedMetric = metricSelectEl.value;
+            localStorage.setItem(METRIC_KEY, selectedMetric);
+            updateMetricDisplay();
+            filterTable(); // Re-render to show/hide column
+        };
+
+        /** Updates the visibility and label of the extra metric column. */
+        const updateMetricDisplay = () => {
+            if (selectedMetric === 'none') {
+                extraMetricHeaderEl.classList.add('hidden');
+                extraMetricHeaderEl.classList.remove('2xl:table-cell');
+            } else {
+                extraMetricHeaderEl.classList.remove('hidden');
+                extraMetricHeaderEl.classList.add('2xl:table-cell');
+
+                // Update Header Label
+                let label = '';
+                switch(selectedMetric) {
+                    case 'total_supply': label = 'Total Supply'; break;
+                    case 'circulating_supply': label = 'Circulating Supply'; break;
+                    default: label = 'Extra Metric';
+                }
+                extraMetricLabelEl.textContent = label;
+                
+                // Update the sort key for the metric header
+                extraMetricHeaderEl.dataset.sort = selectedMetric;
+            }
+        };
+
+
+        /** Updates the 'Last Updated' timestamp display. */
+        const updateLastUpdated = (timestamp) => {
+            if (timestamp === 0) {
+                lastUpdatedEl.textContent = 'Data retrieval failed.';
+                return;
+            }
+
+            const date = new Date(timestamp);
+            const timeString = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            const dateString = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            
+            const elapsed = Date.now() - timestamp;
+            const remaining = REFRESH_INTERVAL_MS - elapsed;
+            
+            let statusText = `Updated: ${dateString} at ${timeString}`;
+            
+            if (remaining > 0) {
+                const minutes = Math.ceil(remaining / (60 * 1000));
+                statusText += ` (Next update in ~${minutes} min)`;
+            } else {
+                statusText += ' (Update pending)';
+            }
+            
+            lastUpdatedEl.textContent = statusText;
+        };
+
+        // --- Initialization ---
+
+        window.onload = () => {
+            // Load initial view based on hash
+            updateView();
+            // Listen for hash changes to navigate between pages
+            window.onhashchange = updateView;
+            
+            // Only load data if we start on the dashboard view
+            if (currentView === 'dashboard') {
+                loadDashboardData();
+            }
+
+            // Set up recurring hourly refresh
+            setInterval(loadDashboardData, REFRESH_INTERVAL_MS);
+
+            // Set up a one-minute timer to update the 'time remaining' status
+setInterval(() => {
+    const cachedCrypto = JSON.parse(localStorage.getItem(CACHE_KEY_CRYPTO) || '{}');
+    updateLastUpdated(cachedCrypto.timestamp || 0);
+}, 60000);
+
+
+            // Setup sorting event listeners for all headers
+            document.querySelectorAll('.table-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const key = this.dataset.sort;
+                    let direction = 'desc'; 
+
+                    if (currentSort.key === key) {
+                        direction = currentSort.direction === 'desc' ? 'asc' : 'desc';
+                    }
+
+                    // For the extra metric, if not selected, auto-select a default when clicked
+                    if (this.id === 'extra-metric-header' && selectedMetric === 'none') {
+                        metricSelectEl.value = 'total_supply';
+                        toggleMetric();
+                    }
+
+                    sortAndRender(currentData, key, direction);
+                });
+            });
+        };
+
+        // ✅ Add this block before </script>
+document.addEventListener("DOMContentLoaded", () => {
+    updateView();
+    window.onhashchange = updateView;
+    if (currentView === 'dashboard') {
+        loadDashboardData();
+    }
+});
+    </script>
+</body>
+</html>
