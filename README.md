@@ -29,6 +29,6 @@ It provides **real-time market data**, **portfolio tracking**, and **educational
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/cryptopulse-pro.git
+   git clone https://github.com/bhanu2006-24/crypto-pulse
    cd cryptopulse-pro
 # crypto-pulse
