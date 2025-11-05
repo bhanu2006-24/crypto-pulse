@@ -712,47 +712,72 @@
         };
 
         /** Main function to fetch all data and manage state. */
-        const loadDashboardData = async () => {
-            lastUpdatedEl.textContent = 'Fetching new data...';
-            initialMessage.parentElement.classList.remove('hidden'); 
+/** Main function to fetch all data and manage state. */
+const loadDashboardData = async () => {
+  try {
+    lastUpdatedEl.textContent = 'Fetching new data...';
+    initialMessage.textContent = 'Loading data...';
+    initialMessage.parentElement.classList.remove('hidden');
+    loadingIndicator.classList.remove('hidden');
 
-            const [cryptoResponse, globalResponse] = await Promise.all([
-                tryFetchMultiple(CRYPTO_ENDPOINTS, 'cryptoData'),
-                tryFetchMultiple(GLOBAL_ENDPOINTS, 'globalData')
-            ]);
+    const [cryptoResponse, globalResponse] = await Promise.all([
+      tryFetchMultiple(CRYPTO_ENDPOINTS, 'cryptoData'),
+      tryFetchMultiple(GLOBAL_ENDPOINTS, 'globalData')
+    ]);
 
-            const now = Date.now();
+    const now = Date.now();
 
-            // 1. Handle Crypto Data
-            if (cryptoResponse.data) {
-                previousPrices = currentData.reduce((acc, coin) => {
-                    acc[coin.id] = coin.current_price;
-                    return acc;
-                }, {});
+    // 1. Handle Crypto Data
+    if (cryptoResponse && cryptoResponse.data) {
+      // save previous prices for flash animations
+      previousPrices = currentData.reduce((acc, coin) => {
+        acc[coin.id] = coin.current_price;
+        return acc;
+      }, {});
 
-                currentData = cryptoResponse.data;
-                initializeMetricPreference();
-                
-                sortAndRender(currentData, currentSort.key, currentSort.direction);
-                updateLastUpdated(cryptoResponse.timestamp || now);
-            } else {
-                initialMessage.textContent = 'CRITICAL ERROR: Could not load cryptocurrency market data from any source.';
-                initialMessage.parentElement.classList.remove('hidden');
-                updateLastUpdated(0);
-            }
+      currentData = cryptoResponse.data;
+      initializeMetricPreference();
 
-            // 2. Handle Global Data
-            if (globalResponse.data) {
-                renderGlobalStats(globalResponse.data.data);
-            } else {
-                globalStatsEl.innerHTML = '<div class="data-card p-6 rounded-xl flex items-center justify-center h-24 text-red-400 md:col-span-3 font-semibold">Global Market Snapshot Unavailable</div>';
-            }
+      // clear placeholder row
+      tableBody.innerHTML = '';
+      sortAndRender(currentData, currentSort.key, currentSort.direction);
+      updateLastUpdated(cryptoResponse.timestamp || now);
+    } else {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center py-10 text-red-400 font-semibold">
+            ⚠️ CRITICAL ERROR: Could not load cryptocurrency market data.
+          </td>
+        </tr>`;
+      updateLastUpdated(0);
+    }
 
-            if (window.lucide) {
-    lucide.createIcons();
-}
+    // 2. Handle Global Data
+    if (globalResponse && globalResponse.data) {
+      renderGlobalStats(globalResponse.data.data);
+    } else {
+      globalStatsEl.innerHTML = `
+        <div class="data-card p-6 rounded-xl flex items-center justify-center h-24 text-red-400 md:col-span-3 font-semibold">
+          Global Market Snapshot Unavailable
+        </div>`;
+    }
 
-        };
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  } catch (err) {
+    console.error("Error in loadDashboardData:", err);
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center py-10 text-red-400 font-semibold">
+          ⚠️ Failed to load data. Please refresh.
+        </td>
+      </tr>`;
+    updateLastUpdated(0);
+  } finally {
+    loadingIndicator.classList.add('hidden');
+  }
+};
 
         /** Renders the top bar with global market statistics. */
         const renderGlobalStats = (globalData) => {
@@ -1067,10 +1092,13 @@ setInterval(() => {
 document.addEventListener("DOMContentLoaded", () => {
     updateView();
     window.onhashchange = updateView;
-    if (currentView === 'dashboard') {
+
+    // Always load dashboard data on first load
+    if (currentView === '' || currentView === 'dashboard') {
         loadDashboardData();
     }
 });
+
 
 
 
