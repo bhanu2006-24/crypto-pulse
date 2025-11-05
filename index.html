@@ -713,6 +713,25 @@
 
         /** Main function to fetch all data and manage state. */
 /** Main function to fetch all data and manage state. */
+
+// Helper to try multiple endpoints until one works
+// async function tryFetchMultiple(endpoints, label) {
+//   for (let i = 0; i < endpoints.length; i++) {
+//     try {
+//       const res = await fetch(endpoints[i].url);
+//       if (!res.ok) throw new Error(`Bad response from ${endpoints[i].key}`);
+//       const data = await res.json();
+//       console.log(`✅ ${label} loaded from ${endpoints[i].key}`, data);
+//       return { data, timestamp: Date.now(), source: endpoints[i].key };
+//     } catch (err) {
+//       console.warn(`❌ ${label} fetch failed from ${endpoints[i].key}`, err);
+//     }
+//   }
+//   return { data: null, timestamp: 0 };
+// }
+
+
+        /** Main function to fetch all data and manage state. */
 const loadDashboardData = async () => {
   try {
     lastUpdatedEl.textContent = 'Fetching new data...';
@@ -729,7 +748,6 @@ const loadDashboardData = async () => {
 
     // 1. Handle Crypto Data
     if (cryptoResponse && cryptoResponse.data) {
-      // save previous prices for flash animations
       previousPrices = currentData.reduce((acc, coin) => {
         acc[coin.id] = coin.current_price;
         return acc;
@@ -738,15 +756,14 @@ const loadDashboardData = async () => {
       currentData = cryptoResponse.data;
       initializeMetricPreference();
 
-      // clear placeholder row
-      tableBody.innerHTML = '';
+      tableBody.innerHTML = ''; // clear placeholder
       sortAndRender(currentData, currentSort.key, currentSort.direction);
       updateLastUpdated(cryptoResponse.timestamp || now);
     } else {
       tableBody.innerHTML = `
         <tr>
           <td colspan="9" class="text-center py-10 text-red-400 font-semibold">
-            ⚠️ CRITICAL ERROR: Could not load cryptocurrency market data.
+            ⚠️ Could not load cryptocurrency market data.
           </td>
         </tr>`;
       updateLastUpdated(0);
@@ -778,6 +795,7 @@ const loadDashboardData = async () => {
     loadingIndicator.classList.add('hidden');
   }
 };
+
 
         /** Renders the top bar with global market statistics. */
         const renderGlobalStats = (globalData) => {
