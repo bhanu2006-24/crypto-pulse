@@ -293,7 +293,7 @@
             { url: API_BASE + 'global', key: 'CoinGecko-Global' },
         ];
         // Note: Keeping the refresh interval high to respect external API limits, but the experience is smoother now.
-        const REFRESH_INTERVAL_MS = 60 * 60 * 1000; 
+        const REFRESH_INTERVAL_MS = 5 * 60 * 1000; 
         const MAX_RETRIES = 3;
         const BASE_DELAY_MS = 1500;
         const CACHE_KEY = 'cryptoDashboardCacheProV5';
@@ -325,6 +325,33 @@
         let currentView = '';
 
         // --- Routing and View Management ---
+
+        // --- Load cached data immediately on startup ---
+const cachedCrypto = localStorage.getItem(CACHE_KEY_CRYPTO);
+if (cachedCrypto) {
+  try {
+    const parsed = JSON.parse(cachedCrypto);
+    if (parsed.data && parsed.data.length) {
+      currentData = parsed.data;
+      renderTable(parsed.data);
+    }
+  } catch (e) {
+    console.warn("Bad cached crypto data", e);
+  }
+}
+
+const cachedGlobal = localStorage.getItem(CACHE_KEY_GLOBAL);
+if (cachedGlobal) {
+  try {
+    const parsed = JSON.parse(cachedGlobal);
+    if (parsed.data) {
+      renderGlobalStats(parsed.data);
+    }
+  } catch (e) {
+    console.warn("Bad cached global data", e);
+  }
+}
+
 
         /** Updates the visibility and content based on the URL hash. */
         const updateView = () => {
