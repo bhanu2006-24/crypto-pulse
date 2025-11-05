@@ -714,21 +714,7 @@
         /** Main function to fetch all data and manage state. */
 /** Main function to fetch all data and manage state. */
 
-// Helper to try multiple endpoints until one works
-// async function tryFetchMultiple(endpoints, label) {
-//   for (let i = 0; i < endpoints.length; i++) {
-//     try {
-//       const res = await fetch(endpoints[i].url);
-//       if (!res.ok) throw new Error(`Bad response from ${endpoints[i].key}`);
-//       const data = await res.json();
-//       console.log(`✅ ${label} loaded from ${endpoints[i].key}`, data);
-//       return { data, timestamp: Date.now(), source: endpoints[i].key };
-//     } catch (err) {
-//       console.warn(`❌ ${label} fetch failed from ${endpoints[i].key}`, err);
-//     }
-//   }
-//   return { data: null, timestamp: 0 };
-// }
+
 
 
         /** Main function to fetch all data and manage state. */
@@ -817,7 +803,7 @@ const loadDashboardData = async () => {
                     <p class="text-2xl font-extrabold text-white">${formatCurrency(totalVolumeUSD)}</p>
                 </div>
                 <div class="data-card p-4 rounded-xl flex flex-col justify-center">
-                    <h3 class="text-sm text-gray-400 font-semibold mb-1 flex items-center"><i data-lucide="shield-half" class="w-4 h-4 mr-2 text-yellow-500" aria-hidden="true"></i> Dominance (BTC/ETH)</h3>
+                    <h3 class="text-sm text-gray-400 font-semibold mb-1 flex items-center"><i data-lucide="shield-check" class="w-4 h-4 mr-2 text-yellow-500"></i>  Dominance (BTC/ETH)</h3>
                     <p class="text-2xl font-extrabold text-white">${btcDominance} / ${ethDominance}</p>
                 </div>
             `;
