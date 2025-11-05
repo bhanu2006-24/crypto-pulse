@@ -105,31 +105,60 @@
 <body class="min-h-screen flex flex-col">
 
     <!-- Top Navigation Bar (Website Look) -->
-    <nav class="bg-header-bg border-b border-gray-700/50 sticky top-0 z-50 shadow-lg">
-        <div class="max-w-8xl mx-auto px-4 sm:px-8 py-3 flex justify-between items-center">
-            <a href="#dashboard" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-600">
-                CryptoPulse
-            </a>
-            <div id="nav-links" class="flex space-x-6 text-sm font-medium text-gray-400">
-                <a href="#dashboard" data-page="dashboard" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Dashboard</a>
-                <a href="#movers" data-page="movers" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Market Movers</a>
-                <a href="#portfolio" data-page="portfolio" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Portfolio Tracker</a>
-                <a href="#resources" data-page="resources" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Resources</a>
-                <a href="#about" data-page="about" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">About</a>
-                <!-- NEW SECONDARY LINKS -->
-                <a href="#security" data-page="security" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400 hidden lg:inline">Security</a>
-                <a href="#careers" data-page="careers" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400 hidden lg:inline">Careers</a>
-            </div>
-            <div id="loading-indicator" class="hidden">
-                <div class="flex items-center space-x-2 bg-gray-900 px-3 py-1 rounded-full border border-teal-500/20">
-                    <div class="w-2 h-2 bg-teal-400 rounded-full loading-dot"></div>
-                    <div class="w-2 h-2 bg-blue-400 rounded-full loading-dot"></div>
-                    <span class="text-xs text-gray-400">Loading...</span>
-                </div>
-            </div>
-        </div>
-    </nav>
+<!-- Top Navigation Bar (restored, with mobile drawer) -->
+<nav class="bg-header-bg border-b border-gray-700/50 sticky top-0 z-50 shadow-lg">
+  <div class="max-w-8xl mx-auto px-4 sm:px-8 py-3 flex justify-between items-center">
+    <!-- Logo -->
+    <a href="#dashboard" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-600">
+      CryptoPulse
+    </a>
+
+    <!-- Desktop nav links (unchanged layout on md+) -->
+    <div id="nav-links" class="hidden md:flex space-x-6 text-sm font-medium text-gray-400">
+      <a href="#dashboard" data-page="dashboard" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Dashboard</a>
+      <a href="#movers" data-page="movers" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Market Movers</a>
+      <a href="#portfolio" data-page="portfolio" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Portfolio Tracker</a>
+      <a href="#resources" data-page="resources" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">Resources</a>
+      <a href="#about" data-page="about" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400">About</a>
+      <a href="#security" data-page="security" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400 hidden lg:inline">Security</a>
+      <a href="#careers" data-page="careers" class="nav-link transition duration-150 py-2 border-b-2 border-transparent hover:text-teal-400 hidden lg:inline">Careers</a>
+    </div>
+
+    <!-- Loading indicator (unchanged) -->
+    <div id="loading-indicator" class="hidden">
+      <div class="flex items-center space-x-2 bg-gray-900 px-3 py-1 rounded-full border border-teal-500/20">
+        <div class="w-2 h-2 bg-teal-400 rounded-full loading-dot"></div>
+        <div class="w-2 h-2 bg-blue-400 rounded-full loading-dot"></div>
+        <span class="text-xs text-gray-400">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Mobile menu button -->
+    <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-300 hover:bg-gray-800 focus:outline-none" aria-label="Open menu">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16m-7 6h7"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile drawer (slides down, clean, no graph impact) -->
+  <div id="mobile-menu" class="hidden md:hidden bg-[#101010] border-t border-gray-700">
+    <div class="flex flex-col space-y-2 px-6 py-4 text-gray-300 text-sm">
+      <a href="#dashboard" data-page="dashboard" class="nav-link py-2 hover:text-teal-400">Dashboard</a>
+      <a href="#movers" data-page="movers" class="nav-link py-2 hover:text-teal-400">Market Movers</a>
+      <a href="#portfolio" data-page="portfolio" class="nav-link py-2 hover:text-teal-400">Portfolio Tracker</a>
+      <a href="#resources" data-page="resources" class="nav-link py-2 hover:text-teal-400">Resources</a>
+      <a href="#about" data-page="about" class="nav-link py-2 hover:text-teal-400">About</a>
+      <a href="#security" data-page="security" class="nav-link py-2 hover:text-teal-400">Security</a>
+      <a href="#careers" data-page="careers" class="nav-link py-2 hover:text-teal-400">Careers</a>
+    </div>
+  </div>
+</nav>
+
     
+
     <!-- Main Content Area -->
     <main class="flex-grow p-4 sm:p-8">
         <div class="max-w-8xl mx-auto">
@@ -145,9 +174,10 @@
                 <!-- 1. DASHBOARD VIEW (Market Table) -->
                 <div id="dashboard-view" class="view-content">
                     <header class="mb-8 pt-4 pb-6 border-b border-gray-700">
-                        <h1 class="text-5xl font-extrabold text-white mb-2 tracking-tight">
+                        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">
                             Top 50 Market Analysis
                         </h1>
+
                         <p class="text-gray-400 mb-4 text-lg">Real-time market data with advanced filtering and key financial metrics.</p>
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm font-medium text-gray-500">
                             <div id="status-bar" class="flex items-center space-x-2 mb-2 sm:mb-0">
@@ -158,7 +188,7 @@
                     </header>
 
                     <!-- Control Panel: Filter and Metric Selection -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                         <div class="md:col-span-2">
                             <input type="text" id="coin-search" placeholder="Filter coin by name or symbol..."
                                 class="w-full p-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
@@ -188,22 +218,23 @@
 
                     <!-- Main Content (Table) -->
                     <div class="overflow-x-auto rounded-xl shadow-2xl">
-                        <table class="min-w-full rounded-xl overflow-hidden">
-                            <thead class="bg-[#1F2937] uppercase text-xs text-gray-400 tracking-wider sticky top-0 border-b border-gray-700">
-                                <tr>
-                                    <th class="py-4 px-4 text-left">#</th>
-                                    <th class="py-4 px-4 text-left">Coin</th>
-                                    <th id="sort-price" data-sort="current_price" class="py-4 px-4 text-right table-header">Price <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
-                                    <th id="sort-market-cap" data-sort="market_cap" class="py-4 px-4 text-right table-header hidden sm:table-cell">Mkt Cap <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
-                                    <th id="sort-volume" data-sort="total_volume" class="py-4 px-4 text-right table-header hidden md:table-cell">24h Vol <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
-                                    <th id="sort-ath-change" data-sort="ath_change_percentage" class="py-4 px-4 text-right table-header hidden lg:table-cell">ATH % <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
-                                    <th id="sort-change24h" data-sort="price_change_percentage_24h_in_currency" class="py-4 px-4 text-right table-header">24h % <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i></th>
-                                    <th class="py-4 px-4 text-center hidden xl:table-cell">7D Trend</th>
-                                    <th id="extra-metric-header" class="py-4 px-4 text-right table-header extra-metric hidden 2xl:table-cell" data-sort="total_supply">
-                                        <span id="extra-metric-label">Supply</span> <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1" aria-hidden="true"></i>
-                                    </th>
-                                </tr>
-                            </thead>
+                        <table class="min-w-full text-xs sm:text-sm rounded-xl overflow-hidden">
+                        <thead class="bg-[#1F2937] uppercase text-xs text-gray-400 tracking-wider sticky top-0 border-b border-gray-700">
+                        <tr>
+                            <th class="py-4 px-4 text-left">#</th>
+                            <th class="py-4 px-4 text-left">Coin</th>
+                            <th id="sort-price" data-sort="current_price" class="py-4 px-4 text-right table-header">Price <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1"></i></th>
+                            <th id="sort-market-cap" data-sort="market_cap" class="py-4 px-4 text-right table-header">Mkt Cap <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1"></i></th>
+                            <th id="sort-volume" data-sort="total_volume" class="py-4 px-4 text-right table-header">24h Vol <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1"></i></th>
+                            <th id="sort-ath-change" data-sort="ath_change_percentage" class="py-4 px-4 text-right table-header">ATH % <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1"></i></th>
+                            <th id="sort-change24h" data-sort="price_change_percentage_24h_in_currency" class="py-4 px-4 text-right table-header">24h % <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1"></i></th>
+                            <th class="py-4 px-4 text-center">7D Trend</th>
+                            <th id="extra-metric-header" class="py-4 px-4 text-right table-header extra-metric" data-sort="total_supply">
+                            <span id="extra-metric-label">Supply</span> <i data-lucide="chevrons-up-down" class="w-4 h-4 inline ml-1"></i>
+                            </th>
+                        </tr>
+                        </thead>
+
                             <tbody id="crypto-table-body" class="divide-y divide-gray-800">
                                 <tr><td colspan="9" class="text-center py-10 text-gray-600" id="initial-message">Establishing connection and fetching initial market data...</td></tr>
                             </tbody>
@@ -222,7 +253,7 @@
 
     <!-- Rich Footer (Website Look) -->
     <footer class="mt-12 bg-header-bg border-t border-gray-700/50 p-8">
-        <div class="max-w-8xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+            <div class="max-w-8xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-sm">
             <div>
                 <h4 class="font-bold text-white mb-3">Company</h4>
                 <ul class="space-y-2 text-gray-400">
@@ -843,14 +874,14 @@ tableBody.innerHTML = `
                     <td class="price-cell py-4 px-4 text-right font-mono font-bold text-white ${priceFlashClass}">
                         ${formatCurrency(coin.current_price)}
                     </td>
-                    <td class="py-4 px-4 text-right text-gray-300 font-medium hidden sm:table-cell">${formatLargeNumber(coin.market_cap, 2)}</td>
-                    <td class="py-4 px-4 text-right text-gray-300 font-medium hidden md:table-cell">${formatLargeNumber(coin.total_volume, 2)}</td>
-                    <td class="py-4 px-4 text-right font-mono font-bold hidden lg:table-cell ${athClass}">${formatPercent(athChange, 1)}</td>
+                    <td class="py-4 px-4 text-right text-gray-300 font-medium ">${formatLargeNumber(coin.market_cap, 2)}</td>
+                    <td class="py-4 px-4 text-right text-gray-300 font-medium ">${formatLargeNumber(coin.total_volume, 2)}</td>
+                    <td class="py-4 px-4 text-right font-mono font-bold  ${athClass}">${formatPercent(athChange, 1)}</td>
                     <td class="change-cell py-4 px-4 text-right">
                         <div class="change-bar ${barClass}" style="width: ${barWidth}%;"></div>
                         <span class="change-value ${changeClass24h}">${formatPercent(change24h)}</span>
                     </td>
-                    <td class="py-4 px-4 text-center hidden xl:table-cell ${trendColorClass} relative">
+                    <td class="py-4 px-4 text-center  ${trendColorClass} relative">
                         ${renderSparkline(coin.sparkline_in_7d.price, change7d)}
                         <span class="absolute top-1 right-2 text-xs font-semibold ${changeClass7d}">${formatPercent(change7d, 1)}</span>
                     </td>
@@ -1040,6 +1071,23 @@ document.addEventListener("DOMContentLoaded", () => {
         loadDashboardData();
     }
 });
+
+
+
+// Mobile nav toggle (non-destructive)
+const mobileBtn = document.getElementById('mobile-menu-button');
+const mobileMenu = document.getElementById('mobile-menu');
+if (mobileBtn && mobileMenu) {
+  mobileBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+  });
+  // Close menu when a link is clicked
+  mobileMenu.querySelectorAll('a.nav-link').forEach(link => {
+    link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+  });
+}
+
+
     </script>
 </body>
 </html>
